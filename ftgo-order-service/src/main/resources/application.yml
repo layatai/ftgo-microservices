@@ -72,6 +72,26 @@ resilience4j:
         automaticTransitionFromOpenToHalfOpenEnabled: true
         waitDurationInOpenState: 10s
         failureRateThreshold: 50
+  retry:
+    configs:
+      default:
+        maxRetryAttempts: 3
+        waitDuration: 1s
+        exponentialBackoffMultiplier: 2
+        maxWaitDuration: 30s
+        retryExceptions:
+          - java.net.ConnectException
+          - java.net.SocketTimeoutException
+          - java.util.concurrent.TimeoutException
+          - org.springframework.web.reactive.function.client.WebClientException
+          - org.springframework.web.reactive.function.client.WebClientResponseException
+        ignoreExceptions:
+          - java.lang.IllegalArgumentException
+          - java.lang.IllegalStateException
+    instances:
+      saga-step-retry:
+        baseConfig: default
+        registerHealthIndicator: true
 
 server:
   port: 8083

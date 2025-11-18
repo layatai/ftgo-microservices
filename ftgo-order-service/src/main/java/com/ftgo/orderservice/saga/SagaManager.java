@@ -19,6 +19,7 @@ import java.util.Optional;
 public class SagaManager {
     private final SagaInstanceRepository sagaInstanceRepository;
     private final List<SagaDefinition> sagaDefinitions;
+    private final SagaStepRetryHandler retryHandler;
 
     public <T> SagaInstance createSagaInstance(String sagaType, T sagaData) {
         log.info("Creating saga instance of type: {}", sagaType);
@@ -85,11 +86,12 @@ public class SagaManager {
             sagaInstance.startStep(step.getName());
             sagaInstance = sagaInstanceRepository.save(sagaInstance);
             
-            // Execute step asynchronously with callback
+            // Execute step asynchronously with retry and callback
             CreateOrderSagaData sagaData = (CreateOrderSagaData) sagaInstance.getSagaData();
             sagaData.setSagaInstanceId(sagaInstance.getId());
             
-            step.executeAsync(sagaData, result -> {
+            // Use retry handler to execute step with Resilience4j retry
+            retryHandler.executeWithRetry(step, sagaData, result -> {
                 if (result.isSuccess()) {
                     // Store step result in saga data
                     storeStepResult(sagaData, step.getName(), result.getResult());
