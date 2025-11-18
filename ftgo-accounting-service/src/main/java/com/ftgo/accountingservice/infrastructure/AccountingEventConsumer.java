@@ -11,6 +11,13 @@ import org.springframework.stereotype.Component;
 
 import java.util.function.Consumer;
 
+/**
+ * Event consumer for Accounting Service.
+ * 
+ * NOTE: This service now responds to orchestrated commands from Order Service
+ * via REST API, not events. This consumer is kept for backward compatibility
+ * but the primary communication is orchestrated.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -20,19 +27,20 @@ public class AccountingEventConsumer {
     @Bean
     public Consumer<OrderApprovedEvent> orderApproved() {
         return event -> {
-            log.info("Received OrderApprovedEvent for order: {}", event.getOrderId());
-            // Create invoice when order is approved
-            // This would typically fetch order details to get the amount
+            log.info("Received OrderApprovedEvent for order: {} (legacy event - orchestration preferred)", 
+                    event.getOrderId());
+            // In orchestration-based pattern, payments are authorized via REST commands
+            // from the Order Service orchestrator, not via events
         };
     }
 
     @Bean
     public Consumer<DeliveryDeliveredEvent> deliveryDelivered() {
         return event -> {
-            log.info("Received DeliveryDeliveredEvent for order: {}", event.getOrderId());
-            // Process payment when delivery is completed
-            // This would typically fetch invoice details
+            log.info("Received DeliveryDeliveredEvent for order: {} (legacy event - orchestration preferred)", 
+                    event.getOrderId());
+            // In orchestration-based pattern, payment processing is done via REST commands
+            // from the Order Service orchestrator, not via events
         };
     }
 }
-

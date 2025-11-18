@@ -8,7 +8,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class OrderCreatedEvent extends DomainEvent {
     private String orderId;
     private String customerId;

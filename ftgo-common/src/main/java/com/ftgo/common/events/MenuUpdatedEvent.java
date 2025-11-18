@@ -8,7 +8,6 @@ import java.util.List;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class MenuUpdatedEvent extends DomainEvent {
     private String restaurantId;
     private List<MenuItemInfo> menuItems;

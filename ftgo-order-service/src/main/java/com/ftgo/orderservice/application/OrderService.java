@@ -10,6 +10,9 @@ import com.ftgo.orderservice.domain.OrderRepository;
 import com.ftgo.orderservice.domain.OrderState;
 import com.ftgo.orderservice.infrastructure.OrderEventPublisher;
 import com.ftgo.orderservice.infrastructure.RestaurantServiceClient;
+import com.ftgo.orderservice.saga.CreateOrderSagaData;
+import com.ftgo.orderservice.saga.OrderSagaService;
+import com.ftgo.orderservice.saga.model.SagaInstance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -26,10 +29,11 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final OrderEventPublisher eventPublisher;
     private final RestaurantServiceClient restaurantServiceClient;
+    private final OrderSagaService orderSagaService;
 
     @Transactional
     public Order createOrder(String customerId, String restaurantId, List<CreateOrderLineItemDTO> lineItemDTOs,
-                           String deliveryAddress, String deliveryTime) {
+                           String deliveryAddress, String deliveryTime, String idempotencyKey) {
         log.info("Creating order for customer: {} at restaurant: {}", customerId, restaurantId);
         
         // Validate menu items and get prices
@@ -44,6 +48,21 @@ public class OrderService {
         
         Order order = new Order(customerId, restaurantId, lineItems, deliveryAddress, deliveryTime);
         order = orderRepository.save(order);
+        
+        // Create saga data and start the saga (orchestration-based)
+        CreateOrderSagaData sagaData = new CreateOrderSagaData();
+        sagaData.setOrderId(order.getId());
+        sagaData.setCustomerId(customerId);
+        sagaData.setRestaurantId(restaurantId);
+        sagaData.setIdempotencyKey(idempotencyKey);
+        sagaData.setLineItems(lineItems);
+        sagaData.setOrderTotal(order.getOrderTotal());
+        // Set ticket and payment requests based on order data
+        
+        SagaInstance sagaInstance = orderSagaService.createOrderSaga(sagaData);
+        sagaData.setSagaInstanceId(sagaInstance.getId());
+        log.info("Created order saga with id: {} for order: {} (orchestration-based)", 
+                sagaInstance.getId(), order.getId());
         
         publishDomainEvents(order);
         

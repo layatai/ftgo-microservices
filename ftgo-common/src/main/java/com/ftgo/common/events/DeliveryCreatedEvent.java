@@ -1,12 +1,10 @@
 package com.ftgo.common.events;
 
 import lombok.Getter;
-import lombok.NoArgsConstructor;
 import lombok.Setter;
 
 @Getter
 @Setter
-@NoArgsConstructor
 public class DeliveryCreatedEvent extends DomainEvent {
     private String deliveryId;
     private String orderId;

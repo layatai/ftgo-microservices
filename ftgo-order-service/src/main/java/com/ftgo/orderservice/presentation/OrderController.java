@@ -30,7 +30,9 @@ public class OrderController {
 
     @PostMapping
     @Operation(summary = "Create a new order")
-    public ResponseEntity<OrderDTO> createOrder(@Valid @RequestBody CreateOrderRequest request) {
+    public ResponseEntity<OrderDTO> createOrder(
+            @Valid @RequestBody CreateOrderRequest request,
+            @RequestHeader(value = "Idempotency-Key", required = false) String idempotencyKey) {
         log.info("Creating order for customer: {}", request.getCustomerId());
         
         var lineItemDTOs = request.getLineItems().stream()
@@ -48,7 +50,8 @@ public class OrderController {
                 request.getRestaurantId(),
                 lineItemDTOs,
                 request.getDeliveryAddress(),
-                request.getDeliveryTime()
+                request.getDeliveryTime(),
+                idempotencyKey
         );
         
         return ResponseEntity.status(HttpStatus.CREATED).body(orderMapper.toDTO(order));
