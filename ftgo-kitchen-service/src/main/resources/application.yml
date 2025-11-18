@@ -3,7 +3,7 @@ spring:
     name: kitchen-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5435/ftgo_kitchen
+    url: jdbc:postgresql://localhost:5432/ftgo_kitchen
     username: ftgo
     password: ftgo123
     driver-class-name: org.postgresql.Driver

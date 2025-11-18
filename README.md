@@ -58,10 +58,11 @@ docker-compose up -d
 ```
 
 This will start:
-- 6 PostgreSQL databases (one per service)
+- PostgreSQL (single instance hosting all service databases)
 - Kafka and Zookeeper
 - Consul (service discovery)
 - Zipkin (distributed tracing)
+- Redis (for distributed locking)
 
 ### 2. Build the Project
 
@@ -246,16 +247,22 @@ ftgo-microservices/
 | Delivery Service | 8085 |
 | Accounting Service | 8086 |
 
-## Database Ports
+## Database Configuration
 
-| Database | Port |
-|----------|------|
-| Customer DB | 5432 |
-| Restaurant DB | 5433 |
-| Order DB | 5434 |
-| Kitchen DB | 5435 |
-| Delivery DB | 5436 |
-| Accounting DB | 5437 |
+All services use a single PostgreSQL instance on port **5432**, with separate databases for each service:
+
+| Service | Database Name |
+|---------|---------------|
+| Customer Service | ftgo_customer |
+| Restaurant Service | ftgo_restaurant |
+| Order Service | ftgo_order |
+| Kitchen Service | ftgo_kitchen |
+| Delivery Service | ftgo_delivery |
+| Accounting Service | ftgo_accounting |
+
+**PostgreSQL Connection**: `localhost:5432`
+**Username**: `ftgo`
+**Password**: `ftgo123`
 
 ## Saga Pattern Implementation
 

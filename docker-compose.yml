@@ -2,102 +2,18 @@ version: '3.8'
 
 services:
   # Infrastructure Services
-  postgres-customer:
+  postgres:
     image: postgres:16-alpine
-    container_name: ftgo-postgres-customer
+    container_name: ftgo-postgres
     environment:
-      POSTGRES_DB: ftgo_customer
+      POSTGRES_DB: postgres
       POSTGRES_USER: ftgo
       POSTGRES_PASSWORD: ftgo123
     ports:
       - "5432:5432"
     volumes:
-      - postgres_customer_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ftgo"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-restaurant:
-    image: postgres:16-alpine
-    container_name: ftgo-postgres-restaurant
-    environment:
-      POSTGRES_DB: ftgo_restaurant
-      POSTGRES_USER: ftgo
-      POSTGRES_PASSWORD: ftgo123
-    ports:
-      - "5433:5432"
-    volumes:
-      - postgres_restaurant_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ftgo"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-order:
-    image: postgres:16-alpine
-    container_name: ftgo-postgres-order
-    environment:
-      POSTGRES_DB: ftgo_order
-      POSTGRES_USER: ftgo
-      POSTGRES_PASSWORD: ftgo123
-    ports:
-      - "5434:5432"
-    volumes:
-      - postgres_order_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ftgo"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-kitchen:
-    image: postgres:16-alpine
-    container_name: ftgo-postgres-kitchen
-    environment:
-      POSTGRES_DB: ftgo_kitchen
-      POSTGRES_USER: ftgo
-      POSTGRES_PASSWORD: ftgo123
-    ports:
-      - "5435:5432"
-    volumes:
-      - postgres_kitchen_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ftgo"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-delivery:
-    image: postgres:16-alpine
-    container_name: ftgo-postgres-delivery
-    environment:
-      POSTGRES_DB: ftgo_delivery
-      POSTGRES_USER: ftgo
-      POSTGRES_PASSWORD: ftgo123
-    ports:
-      - "5436:5432"
-    volumes:
-      - postgres_delivery_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ftgo"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
-
-  postgres-accounting:
-    image: postgres:16-alpine
-    container_name: ftgo-postgres-accounting
-    environment:
-      POSTGRES_DB: ftgo_accounting
-      POSTGRES_USER: ftgo
-      POSTGRES_PASSWORD: ftgo123
-    ports:
-      - "5437:5432"
-    volumes:
-      - postgres_accounting_data:/var/lib/postgresql/data
+      - postgres_data:/var/lib/postgresql/data
+      - ./docker/init-multiple-databases.sh:/docker-entrypoint-initdb.d/init-multiple-databases.sh
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U ftgo"]
       interval: 10s
@@ -178,12 +94,7 @@ services:
       - redis_data:/data
 
 volumes:
-  postgres_customer_data:
-  postgres_restaurant_data:
-  postgres_order_data:
-  postgres_kitchen_data:
-  postgres_delivery_data:
-  postgres_accounting_data:
+  postgres_data:
   redis_data:
 
 networks:

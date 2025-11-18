@@ -3,7 +3,7 @@ spring:
     name: order-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5434/ftgo_order
+    url: jdbc:postgresql://localhost:5432/ftgo_order
     username: ftgo
     password: ftgo123
     driver-class-name: org.postgresql.Driver

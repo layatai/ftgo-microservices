@@ -3,7 +3,7 @@ spring:
     name: accounting-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5437/ftgo_accounting
+    url: jdbc:postgresql://localhost:5432/ftgo_accounting
     username: ftgo
     password: ftgo123
     driver-class-name: org.postgresql.Driver

@@ -3,7 +3,7 @@ spring:
     name: restaurant-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5433/ftgo_restaurant
+    url: jdbc:postgresql://localhost:5432/ftgo_restaurant
     username: ftgo
     password: ftgo123
     driver-class-name: org.postgresql.Driver

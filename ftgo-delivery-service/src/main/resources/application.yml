@@ -3,7 +3,7 @@ spring:
     name: delivery-service
   
   datasource:
-    url: jdbc:postgresql://localhost:5436/ftgo_delivery
+    url: jdbc:postgresql://localhost:5432/ftgo_delivery
     username: ftgo
     password: ftgo123
     driver-class-name: org.postgresql.Driver
