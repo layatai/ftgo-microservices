@@ -1,0 +1,177 @@
+version: '3.8'
+
+services:
+  # Infrastructure Services
+  postgres-customer:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-customer
+    environment:
+      POSTGRES_DB: ftgo_customer
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_customer_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-restaurant:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-restaurant
+    environment:
+      POSTGRES_DB: ftgo_restaurant
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_restaurant_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-order:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-order
+    environment:
+      POSTGRES_DB: ftgo_order
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5434:5432"
+    volumes:
+      - postgres_order_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-kitchen:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-kitchen
+    environment:
+      POSTGRES_DB: ftgo_kitchen
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5435:5432"
+    volumes:
+      - postgres_kitchen_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-delivery:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-delivery
+    environment:
+      POSTGRES_DB: ftgo_delivery
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5436:5432"
+    volumes:
+      - postgres_delivery_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  postgres-accounting:
+    image: postgres:16-alpine
+    container_name: ftgo-postgres-accounting
+    environment:
+      POSTGRES_DB: ftgo_accounting
+      POSTGRES_USER: ftgo
+      POSTGRES_PASSWORD: ftgo123
+    ports:
+      - "5437:5432"
+    volumes:
+      - postgres_accounting_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ftgo"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zookeeper:
+    image: confluentinc/cp-zookeeper:7.5.0
+    container_name: ftgo-zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    healthcheck:
+      test: ["CMD", "nc", "-z", "localhost", "2181"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  kafka:
+    image: confluentinc/cp-kafka:7.5.0
+    container_name: ftgo-kafka
+    depends_on:
+      - zookeeper
+    ports:
+      - "9092:9092"
+      - "9093:9093"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,PLAINTEXT_INTERNAL://kafka:9093
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_INTERNAL:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT_INTERNAL
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+    healthcheck:
+      test: ["CMD", "kafka-broker-api-versions", "--bootstrap-server", "localhost:9092"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  consul:
+    image: consul:1.17
+    container_name: ftgo-consul
+    ports:
+      - "8500:8500"
+    command: consul agent -dev -client=0.0.0.0
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:8500/v1/status/leader"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  zipkin:
+    image: openzipkin/zipkin:latest
+    container_name: ftgo-zipkin
+    ports:
+      - "9411:9411"
+    healthcheck:
+      test: ["CMD", "wget", "--quiet", "--tries=1", "--spider", "http://localhost:9411/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_customer_data:
+  postgres_restaurant_data:
+  postgres_order_data:
+  postgres_kitchen_data:
+  postgres_delivery_data:
+  postgres_accounting_data:
+
+networks:
+  default:
+    name: ftgo-network
+

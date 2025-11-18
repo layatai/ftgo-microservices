@@ -1,0 +1,82 @@
+spring:
+  application:
+    name: api-gateway
+  
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lower-case-service-id: true
+      routes:
+        - id: customer-service
+          uri: lb://customer-service
+          predicates:
+            - Path=/api/customers/**
+          filters:
+            - StripPrefix=1
+        
+        - id: restaurant-service
+          uri: lb://restaurant-service
+          predicates:
+            - Path=/api/restaurants/**
+          filters:
+            - StripPrefix=1
+        
+        - id: order-service
+          uri: lb://order-service
+          predicates:
+            - Path=/api/orders/**
+          filters:
+            - StripPrefix=1
+        
+        - id: kitchen-service
+          uri: lb://kitchen-service
+          predicates:
+            - Path=/api/tickets/**
+          filters:
+            - StripPrefix=1
+        
+        - id: delivery-service
+          uri: lb://delivery-service
+          predicates:
+            - Path=/api/deliveries/**, /api/couriers/**
+          filters:
+            - StripPrefix=1
+        
+        - id: accounting-service
+          uri: lb://accounting-service
+          predicates:
+            - Path=/api/invoices/**, /api/payments/**
+          filters:
+            - StripPrefix=1
+    
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        health-check-interval: 10s
+        health-check-path: /actuator/health
+
+server:
+  port: 8080
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics,gateway
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    org.springframework.cloud.gateway: DEBUG
+    com.ftgo: DEBUG
+

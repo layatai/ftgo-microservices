@@ -1,0 +1,49 @@
+spring:
+  application:
+    name: accounting-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5437/ftgo_accounting
+    username: ftgo
+    password: ftgo123
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        bindings:
+          orderApproved-in-0:
+            destination: order-events
+            consumer:
+              group-id: accounting-service
+          deliveryDelivered-in-0:
+            destination: delivery-events
+            consumer:
+              group-id: accounting-service
+
+server:
+  port: 8086
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+

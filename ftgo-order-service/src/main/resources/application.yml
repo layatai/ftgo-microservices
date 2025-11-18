@@ -1,0 +1,85 @@
+spring:
+  application:
+    name: order-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5434/ftgo_order
+    username: ftgo
+    password: ftgo123
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+        health-check-interval: 10s
+        health-check-path: /actuator/health
+        instance-id: ${spring.application.name}:${spring.application.instance-id:${random.value}}
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        bindings:
+          orderEvents-out-0:
+            destination: order-events
+            producer:
+              key-serializer: org.apache.kafka.common.serialization.StringSerializer
+              value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+          restaurantCreated-in-0:
+            destination: restaurant-events
+            consumer:
+              group-id: order-service
+          menuUpdated-in-0:
+            destination: restaurant-events
+            consumer:
+              group-id: order-service
+
+resilience4j:
+  circuitbreaker:
+    instances:
+      restaurant-service:
+        registerHealthIndicator: true
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        permittedNumberOfCallsInHalfOpenState: 3
+        automaticTransitionFromOpenToHalfOpenEnabled: true
+        waitDurationInOpenState: 10s
+        failureRateThreshold: 50
+
+server:
+  port: 8083
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+logging:
+  level:
+    com.ftgo: DEBUG
+    org.springframework.cloud: INFO
+

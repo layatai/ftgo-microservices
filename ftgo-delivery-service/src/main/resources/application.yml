@@ -1,0 +1,50 @@
+spring:
+  application:
+    name: delivery-service
+  
+  datasource:
+    url: jdbc:postgresql://localhost:5436/ftgo_delivery
+    username: ftgo
+    password: ftgo123
+    driver-class-name: org.postgresql.Driver
+  
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    show-sql: false
+  
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+  
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        enabled: true
+    
+    stream:
+      kafka:
+        binder:
+          brokers: localhost:9092
+        bindings:
+          deliveryEvents-out-0:
+            destination: delivery-events
+            producer:
+              key-serializer: org.apache.kafka.common.serialization.StringSerializer
+              value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+          ticketReady-in-0:
+            destination: kitchen-events
+            consumer:
+              group-id: delivery-service
+
+server:
+  port: 8085
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+
