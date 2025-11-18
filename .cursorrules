@@ -1,0 +1,250 @@
+# FTGO Microservices - Cursor AI Rules
+
+## Project Overview
+
+FTGO (Food to Go) is a microservices-based food delivery application built with Spring Boot 3.3.x, implementing orchestration-based sagas for distributed transaction management.
+
+## Architecture
+
+- **7 Microservices**: Customer, Restaurant, Order, Kitchen, Delivery, Accounting, API Gateway
+- **Pattern**: Orchestration-based sagas (centralized coordinator)
+- **Database**: Single PostgreSQL instance with separate databases per service (development)
+- **Message Broker**: Apache Kafka for event distribution
+- **Service Discovery**: Consul
+- **Resilience**: Resilience4j (Circuit Breaker, Retry)
+- **Distributed Locking**: Redis
+
+## Documentation Structure
+
+Documentation follows a stage-gate workflow in `docs/`:
+- `docs/0_backlog/` - Raw ideas
+- `docs/1_planning/` - Features being planned (use STAGE_GATE_PROMPT_PLAN.md)
+- `docs/2_inprogress/` - Features being implemented (use STAGE_GATE_PROMPT_PROG.md)
+- `docs/3_completed/` - Completed features (use STAGE_GATE_PROMPT_COMPL.md)
+- `docs/_reference/` - Reference documentation (architecture, APIs, patterns, etc.)
+- `docs/_templates/` - Documentation templates
+
+**Always reference documentation in `docs/_reference/` before making changes.**
+
+## Key Patterns
+
+1. **Saga Pattern (Orchestration-based)**: Central orchestrator (SagaManager) coordinates steps
+2. **Database per Service**: Each service has its own database
+3. **Event-Driven**: Kafka events for notifications (not saga coordination)
+4. **Async Callbacks**: Saga steps use async callbacks for non-blocking execution
+5. **Idempotency**: All operations should be idempotent
+6. **Semantic Locking**: Redis-based distributed locking for saga execution
+
+## Code Organization
+
+### Service Structure
+Each service follows this package structure:
+```
+com.ftgo.{service}/
+├── domain/              # Entities, repositories (domain layer)
+├── application/         # Services, DTOs, mappers (application layer)
+├── infrastructure/      # JPA, events, external clients
+└── presentation/        # REST controllers
+```
+
+### Order Service Special Structure
+Order Service has additional `saga/` package:
+- `SagaManager`: Central orchestrator
+- `AsyncSagaStep`: Step interface
+- `SagaStepRetryHandler`: Retry logic
+- `SemanticLockManager`: Distributed locking
+- `IdempotencyHandler`: Idempotency handling
+- `steps/`: Step implementations
+
+## Coding Conventions
+
+### Naming
+- **Entities**: Singular, PascalCase (`Order`, `Customer`)
+- **Repositories**: `{Entity}Repository` (`OrderRepository`)
+- **Services**: `{Entity}Service` (`OrderService`)
+- **Controllers**: `{Entity}Controller` (`OrderController`)
+- **DTOs**: `{Purpose}DTO` or `{Purpose}Request`/`{Purpose}Response`
+- **Files**: Lowercase with underscores for markdown, camelCase for Java
+
+### Annotations
+- Use `@RequiredArgsConstructor` for dependency injection
+- Use `@Slf4j` for logging
+- Use `@Transactional` for write operations
+- Use `@Transactional(readOnly = true)` for read operations
+- Use `@Valid` for request validation
+
+### Saga Steps
+- Implement `AsyncSagaStep` interface
+- Use async callbacks: `executeAsync(sagaData, callback)`
+- Make steps idempotent
+- Implement compensation: `compensateAsync(sagaData, callback)`
+- Store results in saga data if needed
+
+### Domain Events
+- Extend `DomainEvent` base class
+- Register in `DomainEvent` `@JsonSubTypes`
+- Publish after state changes
+- Use Kafka for distribution
+
+## Technology Stack
+
+- **Java**: 17
+- **Spring Boot**: 3.3.4
+- **Spring Cloud**: 2023.0.3
+- **PostgreSQL**: 16-alpine
+- **Kafka**: 7.5.0
+- **Consul**: 1.17
+- **Redis**: 7-alpine
+- **Resilience4j**: Latest (via Spring Cloud)
+
+## Service Ports
+
+- API Gateway: 8080
+- Customer Service: 8081
+- Restaurant Service: 8082
+- Order Service: 8083
+- Kitchen Service: 8084
+- Delivery Service: 8085
+- Accounting Service: 8086
+
+## Database Configuration
+
+- **Host**: localhost
+- **Port**: 5432
+- **User**: ftgo
+- **Password**: ftgo123
+- **Databases**: `ftgo_customer`, `ftgo_restaurant`, `ftgo_order`, `ftgo_kitchen`, `ftgo_delivery`, `ftgo_accounting`
+
+## When Making Changes
+
+### Before Changes
+1. **Read relevant documentation** in `docs/_reference/`
+2. **Understand the pattern** being used (saga, event-driven, etc.)
+3. **Check existing similar implementations** for consistency
+4. **Review architecture** in `docs/_reference/architecture.md`
+
+### Adding New Features
+1. **Create feature in backlog**: `docs/0_backlog/feature-idea.md`
+2. **Move to planning**: Follow `docs/1_planning/STAGE_GATE_PROMPT_PLAN.md`
+3. **Use templates**: `docs/_templates/feature_spec_template.md` and `design_doc_template.md`
+4. **Update reference docs** if architecture changes
+
+### Adding New Saga Steps
+1. Create class implementing `AsyncSagaStep`
+2. Add to `CreateOrderSagaDefinition.getSteps()`
+3. Update `SagaManager.storeStepResult()` if step returns data
+4. Implement compensation if needed
+5. Test step execution and compensation
+
+### Adding New Services
+1. Create module structure following package conventions
+2. Add to root `pom.xml`
+3. Create domain entities
+4. Create application service
+5. Create REST controller
+6. Create database migration (Flyway)
+7. Configure `application.yml`
+8. Register with Consul
+
+### Adding New Domain Events
+1. Create event class extending `DomainEvent`
+2. Register in `DomainEvent` `@JsonSubTypes`
+3. Publish event in service after state change
+4. Create consumer if needed
+
+## Important Rules
+
+### DO
+- ✅ Follow existing patterns and conventions
+- ✅ Use async callbacks for saga steps
+- ✅ Make operations idempotent
+- ✅ Implement compensation for saga steps
+- ✅ Update documentation when making changes
+- ✅ Use Resilience4j for retry and circuit breaker
+- ✅ Use Redis for distributed locking
+- ✅ Publish domain events after state changes
+- ✅ Use Flyway for database migrations
+- ✅ Follow the stage-gate workflow for features
+
+### DON'T
+- ❌ Use distributed transactions (2PC)
+- ❌ Share databases between services
+- ❌ Make saga steps synchronous
+- ❌ Skip idempotency implementation
+- ❌ Forget compensation implementation
+- ❌ Ignore timeout handling
+- ❌ Modify existing Flyway migrations
+- ❌ Create features without documentation
+
+## Error Handling
+
+### Retryable Errors
+- Network errors: `ConnectException`, `SocketTimeoutException`
+- Timeout errors: `TimeoutException`
+- WebClient errors: `WebClientException`, `WebClientResponseException`
+- HTTP 5xx errors
+
+### Non-Retryable Errors
+- Validation errors: `IllegalArgumentException`, `IllegalStateException`
+- Business logic errors: `InvalidOperationException`
+- Not found errors: `EntityNotFoundException`
+
+## Testing
+
+- Write unit tests for domain logic
+- Write integration tests for REST endpoints
+- Test saga flows (success, failure, compensation)
+- Test idempotency
+- Test retry logic
+- Test timeout handling
+
+## Documentation Updates
+
+When completing features:
+1. Update `docs/_reference/architecture.md` if architecture changed
+2. Update `docs/_reference/completed_features_log.md`
+3. Create summary in `docs/3_completed/{feature-name}/summary.md`
+4. Follow `docs/3_completed/STAGE_GATE_PROMPT_COMPL.md`
+
+## Common File Locations
+
+- **Configuration**: `{service}/src/main/resources/application.yml`
+- **Migrations**: `{service}/src/main/resources/db/migration/V{version}__{description}.sql`
+- **Main Classes**: `{Service}Application.java`
+- **Saga Components**: `ftgo-order-service/src/main/java/com/ftgo/orderservice/saga/`
+
+## Key Classes Reference
+
+### Saga Components
+- `SagaManager`: Central orchestrator
+- `CreateOrderSagaDefinition`: Saga definition
+- `AsyncSagaStep`: Step interface
+- `SagaInstance`: Saga state entity
+- `SagaStepResult`: Step result object
+
+### Saga Steps
+- `ValidateOrderStep`: Validates order
+- `CreateTicketStep`: Creates ticket (REST to Kitchen Service)
+- `AuthorizeCardStep`: Authorizes payment (REST to Accounting Service)
+- `ConfirmCreateOrderStep`: Confirms order
+
+### Resilience
+- `SagaStepRetryHandler`: Wraps steps with Resilience4j Retry
+- `SemanticLockManager`: Redis-based distributed locking
+- `IdempotencyHandler`: Prevents duplicate saga creation
+
+## Communication Patterns
+
+1. **Orchestration (Saga)**: REST commands from SagaManager to services
+2. **Event-Driven**: Kafka events for notifications
+3. **Service Discovery**: Consul for dynamic service location
+
+## Always Remember
+
+- This is a microservices architecture - services are autonomous
+- Saga pattern ensures eventual consistency, not ACID transactions
+- Events are for notifications, not saga coordination
+- All operations should be idempotent
+- Use async callbacks for saga steps
+- Document all changes following the stage-gate workflow
+

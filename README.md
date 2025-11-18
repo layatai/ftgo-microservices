@@ -751,10 +751,29 @@ mvn test
 
 This project is for educational purposes, demonstrating microservices patterns.
 
+## Documentation
+
+Comprehensive documentation is organized in the `docs/` directory using a stage-gate workflow:
+
+### Reference Documentation
+
+- **[docs/_reference/architecture.md](docs/_reference/architecture.md)** - System architecture, service decomposition, communication patterns, and infrastructure
+- **[docs/_reference/saga_implementation.md](docs/_reference/saga_implementation.md)** - Detailed guide to saga pattern implementation, flow, retry, idempotency, and troubleshooting
+- **[docs/_reference/api_documentation.md](docs/_reference/api_documentation.md)** - Complete API reference for all services with request/response examples
+- **[docs/_reference/development_guide.md](docs/_reference/development_guide.md)** - Development setup, workflows, code conventions, and best practices
+- **[docs/_reference/patterns.md](docs/_reference/patterns.md)** - Reference guide for all microservices patterns implemented
+- **[docs/_reference/code_structure.md](docs/_reference/code_structure.md)** - Code organization, key classes, and their relationships
+- **[docs/_reference/ai_context.md](docs/_reference/ai_context.md)** - Context guide for AI assistants
+
+### Documentation Structure
+
+See **[docs/README.md](docs/README.md)** for the complete documentation structure and workflow.
+
 ## References
 
 - Spring Boot Documentation: https://spring.io/projects/spring-boot
 - Spring Cloud Documentation: https://spring.io/projects/spring-cloud
 - Apache Kafka Documentation: https://kafka.apache.org/documentation/
 - PostgreSQL Documentation: https://www.postgresql.org/docs/
+- Resilience4j Documentation: https://resilience4j.readme.io/
 
