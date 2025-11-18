@@ -90,7 +90,14 @@ public class SagaManager {
             sagaInstance = sagaInstanceRepository.save(sagaInstance);
             
             // Execute step asynchronously with retry and callback
-            final CreateOrderSagaData sagaData = (CreateOrderSagaData) sagaInstance.getSagaData();
+            // Reload from database to ensure we have the latest state
+            sagaInstance = sagaInstanceRepository.findById(sagaInstanceId)
+                    .orElseThrow(() -> new IllegalStateException("Saga instance not found: " + sagaInstanceId));
+            
+            final CreateOrderSagaData sagaData = sagaInstance.getSagaData(CreateOrderSagaData.class);
+            if (sagaData == null) {
+                throw new IllegalStateException("Saga data is null for saga instance: " + sagaInstanceId);
+            }
             sagaData.setSagaInstanceId(sagaInstanceId);
             
             // Use retry handler to execute step with Resilience4j retry
@@ -138,7 +145,7 @@ public class SagaManager {
                 AsyncSagaStep step = stepOpt.get();
                 if (step.hasCompensation()) {
                     log.info("Executing compensation for step: {} (orchestrated)", step.getName());
-                    CreateOrderSagaData sagaData = (CreateOrderSagaData) sagaInstance.getSagaData();
+                    CreateOrderSagaData sagaData = sagaInstance.getSagaData(CreateOrderSagaData.class);
                     sagaData.setSagaInstanceId(sagaInstance.getId());
                     
                     step.compensateAsync(sagaData, result -> {

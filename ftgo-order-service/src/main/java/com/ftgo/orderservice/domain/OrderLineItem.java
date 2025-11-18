@@ -1,5 +1,6 @@
 package com.ftgo.orderservice.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.ftgo.common.domain.Money;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -18,6 +19,7 @@ public class OrderLineItem {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "order_id", nullable = false)
     @Setter
+    @JsonIgnore  // Prevent circular reference during JSON serialization
     private Order order;
 
     @Column(nullable = false)

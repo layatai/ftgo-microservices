@@ -47,3 +47,5 @@ out/
 ### Docker ###
 docker-compose.override.yml
 
+# nodejs
+node_modules

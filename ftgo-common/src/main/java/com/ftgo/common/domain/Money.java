@@ -1,15 +1,20 @@
 package com.ftgo.common.domain;
 
 import jakarta.persistence.Embeddable;
-import lombok.Value;
+import lombok.Getter;
 
 import java.math.BigDecimal;
 
 @Embeddable
-@Value
+@Getter
 public class Money {
-    BigDecimal amount;
-    String currency;
+    private BigDecimal amount;
+    private String currency;
+
+    // Protected no-arg constructor for JPA
+    protected Money() {
+        // JPA requires a no-arg constructor for embeddables
+    }
 
     public Money(BigDecimal amount, String currency) {
         if (amount == null || amount.compareTo(BigDecimal.ZERO) < 0) {

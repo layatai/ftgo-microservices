@@ -45,12 +45,18 @@ public class OrderController {
                 ))
                 .collect(Collectors.toList());
         
+        // Default delivery time to "ASAP" if not provided
+        String deliveryTime = request.getDeliveryTime();
+        if (deliveryTime == null || deliveryTime.isBlank()) {
+            deliveryTime = "ASAP";
+        }
+        
         Order order = orderService.createOrder(
                 request.getCustomerId(),
                 request.getRestaurantId(),
                 lineItemDTOs,
                 request.getDeliveryAddress(),
-                request.getDeliveryTime(),
+                deliveryTime,
                 idempotencyKey
         );
         

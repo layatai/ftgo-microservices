@@ -6,6 +6,7 @@ import com.ftgo.customerservice.application.CustomerService;
 import com.ftgo.customerservice.application.dto.AddPaymentMethodRequest;
 import com.ftgo.customerservice.application.dto.CreateCustomerRequest;
 import com.ftgo.customerservice.application.dto.CustomerDTO;
+import com.ftgo.customerservice.application.dto.LoginRequest;
 import com.ftgo.customerservice.application.mapper.CustomerMapper;
 import com.ftgo.customerservice.domain.Customer;
 import io.swagger.v3.oas.annotations.Operation;
@@ -36,6 +37,14 @@ public class CustomerController {
                 request.getAddress() != null ? request.getAddress() : new Address("", "", "", "")
         );
         return ResponseEntity.status(HttpStatus.CREATED).body(customerMapper.toDTO(customer));
+    }
+
+    @PostMapping("/login")
+    @Operation(summary = "Login with email")
+    public ResponseEntity<CustomerDTO> login(@Valid @RequestBody LoginRequest request) {
+        log.info("Login attempt for email: {}", request.getEmail());
+        Customer customer = customerService.getCustomerByEmail(request.getEmail());
+        return ResponseEntity.ok(customerMapper.toDTO(customer));
     }
 
     @GetMapping("/{customerId}")

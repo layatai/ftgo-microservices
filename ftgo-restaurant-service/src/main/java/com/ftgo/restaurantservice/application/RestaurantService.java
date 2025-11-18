@@ -39,6 +39,12 @@ public class RestaurantService {
                 .orElseThrow(() -> new EntityNotFoundException("Restaurant not found with id: " + restaurantId));
     }
 
+    @Transactional(readOnly = true)
+    public List<Restaurant> getAllRestaurants() {
+        log.info("Getting all restaurants");
+        return restaurantRepository.findAll();
+    }
+
     @Transactional
     public Restaurant updateMenu(String restaurantId, List<MenuItemDTO> menuItemDTOs) {
         log.info("Updating menu for restaurant: {}", restaurantId);

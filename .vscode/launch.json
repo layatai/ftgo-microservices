@@ -77,6 +77,21 @@
             "args": "",
             "vmArgs": "-Dspring.profiles.active=dev",
             "console": "integratedTerminal"
+        },
+        {
+            "type": "node",
+            "name": "Frontend (Dev Server)",
+            "request": "launch",
+            "runtimeExecutable": "npm",
+            "runtimeArgs": ["run", "dev"],
+            "cwd": "${workspaceFolder}/ftgo-frontend",
+            "console": "integratedTerminal",
+            "internalConsoleOptions": "neverOpen",
+            "serverReadyAction": {
+                "pattern": "Local:.*(https?://.*)",
+                "uriFormat": "%s",
+                "action": "openExternally"
+            }
         }
     ],
     "compounds": [
@@ -97,6 +112,26 @@
                 "hidden": false,
                 "group": "",
                 "order": 1
+            }
+        },
+        {
+            "name": "Launch All (Including Frontend)",
+            "configurations": [
+                "Customer Service",
+                "Restaurant Service",
+                "Order Service",
+                "Kitchen Service",
+                "Delivery Service",
+                "Accounting Service",
+                "API Gateway",
+                "Frontend (Dev Server)"
+            ],
+            "preLaunchTask": "start-infrastructure",
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 2
             }
         }
     ]

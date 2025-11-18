@@ -1,17 +1,25 @@
 package com.ftgo.common.domain;
 
 import jakarta.persistence.Embeddable;
-import lombok.Value;
+import lombok.Getter;
+import lombok.Setter;
 
 @Embeddable
-@Value
+@Getter
+@Setter
 public class Address {
-    String street1;
-    String street2;
-    String city;
-    String state;
-    String zip;
-    String country;
+    private String street1;
+    private String street2;
+    private String city;
+    private String state;
+    private String zip;
+    private String country;
+
+    // Public no-arg constructor for JPA and Jackson JSON deserialization
+    public Address() {
+        // JPA requires a no-arg constructor for embeddables
+        // Jackson also needs it for JSON deserialization
+    }
 
     public Address(String street1, String street2, String city, String state, String zip, String country) {
         this.street1 = street1;

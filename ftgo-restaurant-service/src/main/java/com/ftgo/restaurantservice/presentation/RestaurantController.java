@@ -1,6 +1,5 @@
 package com.ftgo.restaurantservice.presentation;
 
-import com.ftgo.common.domain.Money;
 import com.ftgo.common.exception.EntityNotFoundException;
 import com.ftgo.restaurantservice.application.RestaurantService;
 import com.ftgo.restaurantservice.application.dto.CreateRestaurantRequest;
@@ -29,6 +28,17 @@ import java.util.stream.Collectors;
 public class RestaurantController {
     private final RestaurantService restaurantService;
     private final RestaurantMapper restaurantMapper;
+
+    @GetMapping
+    @Operation(summary = "Get all restaurants")
+    public ResponseEntity<List<RestaurantDTO>> getAllRestaurants() {
+        log.info("Getting all restaurants");
+        List<Restaurant> restaurants = restaurantService.getAllRestaurants();
+        List<RestaurantDTO> restaurantDTOs = restaurants.stream()
+                .map(restaurantMapper::toDTO)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(restaurantDTOs);
+    }
 
     @PostMapping
     @Operation(summary = "Create a new restaurant")

@@ -21,7 +21,7 @@ public class CreateOrderRequest {
     @NotBlank(message = "Delivery address is required")
     private String deliveryAddress;
 
-    @NotBlank(message = "Delivery time is required")
+    // Delivery time is optional, will default to "ASAP" if not provided
     private String deliveryTime;
 }
 

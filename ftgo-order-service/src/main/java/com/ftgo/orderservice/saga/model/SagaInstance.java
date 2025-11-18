@@ -1,8 +1,13 @@
 package com.ftgo.orderservice.saga.model;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.DeserializationFeature;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 
 import java.time.Instant;
 import java.util.ArrayList;
@@ -17,7 +22,19 @@ import java.util.UUID;
 @Table(name = "saga_instances")
 @Getter
 @NoArgsConstructor
+@Slf4j
 public class SagaInstance {
+    private static final ObjectMapper objectMapper = createObjectMapper();
+    
+    private static ObjectMapper createObjectMapper() {
+        ObjectMapper mapper = new ObjectMapper();
+        // Configure to handle circular references and JPA entities
+        mapper.configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
+        // Disable features that cause issues with JPA entities
+        mapper.disable(SerializationFeature.WRITE_DATES_AS_TIMESTAMPS);
+        return mapper;
+    }
     @Id
     private String id;
 
@@ -108,15 +125,38 @@ public class SagaInstance {
     }
 
     private String serializeSagaData(Object sagaData) {
-        // Simple serialization - in production, use Jackson or similar
-        return sagaData != null ? sagaData.toString() : null;
+        if (sagaData == null) {
+            return null;
+        }
+        try {
+            return objectMapper.writeValueAsString(sagaData);
+        } catch (JsonProcessingException e) {
+            log.error("Failed to serialize saga data", e);
+            throw new RuntimeException("Failed to serialize saga data", e);
+        }
     }
 
-    @SuppressWarnings("unchecked")
-    public <T> T getSagaData() {
-        // Deserialize saga data - in production, use Jackson or similar
-        // For now, return the string representation
-        return (T) sagaData;
+    /**
+     * Get saga data with explicit type.
+     * This method should be used when you know the exact type of the saga data.
+     */
+    public <T> T getSagaData(Class<T> clazz) {
+        if (sagaData == null || sagaData.isBlank()) {
+            log.warn("Saga data is null or blank for saga instance: {}", id);
+            return null;
+        }
+        try {
+            log.debug("Deserializing saga data to {}: {}", clazz.getName(), sagaData);
+            T result = objectMapper.readValue(sagaData, clazz);
+            log.debug("Successfully deserialized saga data to {}", clazz.getName());
+            return result;
+        } catch (JsonProcessingException e) {
+            log.error("Failed to deserialize saga data to {}: {}", clazz.getName(), sagaData, e);
+            throw new RuntimeException("Failed to deserialize saga data to " + clazz.getName() + ": " + e.getMessage(), e);
+        } catch (Exception e) {
+            log.error("Unexpected error deserializing saga data to {}: {}", clazz.getName(), sagaData, e);
+            throw new RuntimeException("Unexpected error deserializing saga data to " + clazz.getName() + ": " + e.getMessage(), e);
+        }
     }
 }
 
