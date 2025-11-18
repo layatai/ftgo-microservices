@@ -1,0 +1,104 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "java",
+            "name": "Customer Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.customerservice.CustomerServiceApplication",
+            "projectName": "ftgo-customer-service",
+            "cwd": "${workspaceFolder}/ftgo-customer-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Restaurant Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.restaurantservice.RestaurantServiceApplication",
+            "projectName": "ftgo-restaurant-service",
+            "cwd": "${workspaceFolder}/ftgo-restaurant-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Order Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.orderservice.OrderServiceApplication",
+            "projectName": "ftgo-order-service",
+            "cwd": "${workspaceFolder}/ftgo-order-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Kitchen Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.kitchenservice.KitchenServiceApplication",
+            "projectName": "ftgo-kitchen-service",
+            "cwd": "${workspaceFolder}/ftgo-kitchen-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Delivery Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.deliveryservice.DeliveryServiceApplication",
+            "projectName": "ftgo-delivery-service",
+            "cwd": "${workspaceFolder}/ftgo-delivery-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "Accounting Service",
+            "request": "launch",
+            "mainClass": "com.ftgo.accountingservice.AccountingServiceApplication",
+            "projectName": "ftgo-accounting-service",
+            "cwd": "${workspaceFolder}/ftgo-accounting-service",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        },
+        {
+            "type": "java",
+            "name": "API Gateway",
+            "request": "launch",
+            "mainClass": "com.ftgo.apigateway.ApiGatewayApplication",
+            "projectName": "ftgo-api-gateway",
+            "cwd": "${workspaceFolder}/ftgo-api-gateway",
+            "args": "",
+            "vmArgs": "-Dspring.profiles.active=dev",
+            "console": "integratedTerminal"
+        }
+    ],
+    "compounds": [
+        {
+            "name": "Launch All Microservices",
+            "configurations": [
+                "Customer Service",
+                "Restaurant Service",
+                "Order Service",
+                "Kitchen Service",
+                "Delivery Service",
+                "Accounting Service",
+                "API Gateway"
+            ],
+            "preLaunchTask": "start-infrastructure",
+            "stopAll": true,
+            "presentation": {
+                "hidden": false,
+                "group": "",
+                "order": 1
+            }
+        }
+    ]
+}
+
