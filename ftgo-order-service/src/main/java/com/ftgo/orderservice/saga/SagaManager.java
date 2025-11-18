@@ -42,8 +42,9 @@ public class SagaManager {
         SagaInstance sagaInstance = sagaInstanceRepository.findById(sagaInstanceId)
                 .orElseThrow(() -> new IllegalArgumentException("Saga instance not found: " + sagaInstanceId));
         
-        SagaDefinition sagaDefinition = findSagaDefinition(sagaInstance.getSagaType())
-                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaInstance.getSagaType()));
+        final String sagaType = sagaInstance.getSagaType();
+        final SagaDefinition sagaDefinition = findSagaDefinition(sagaType)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaType));
         
         AsyncSagaStep step = sagaDefinition.findStep(stepName)
                 .orElseThrow(() -> new IllegalArgumentException("Step not found: " + stepName));
@@ -74,30 +75,32 @@ public class SagaManager {
     }
 
     private void executeNextStep(SagaInstance sagaInstance) {
-        SagaDefinition sagaDefinition = findSagaDefinition(sagaInstance.getSagaType())
-                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaInstance.getSagaType()));
+        final String sagaType = sagaInstance.getSagaType();
+        final SagaDefinition sagaDefinition = findSagaDefinition(sagaType)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaType));
         
         Optional<AsyncSagaStep> nextStep = sagaDefinition.getNextStep(sagaInstance);
         
         if (nextStep.isPresent()) {
-            AsyncSagaStep step = nextStep.get();
-            log.info("Executing next step: {} for saga: {} (orchestrated)", step.getName(), sagaInstance.getId());
+            final AsyncSagaStep step = nextStep.get();
+            final String sagaInstanceId = sagaInstance.getId();
+            log.info("Executing next step: {} for saga: {} (orchestrated)", step.getName(), sagaInstanceId);
             
             sagaInstance.startStep(step.getName());
             sagaInstance = sagaInstanceRepository.save(sagaInstance);
             
             // Execute step asynchronously with retry and callback
-            CreateOrderSagaData sagaData = (CreateOrderSagaData) sagaInstance.getSagaData();
-            sagaData.setSagaInstanceId(sagaInstance.getId());
+            final CreateOrderSagaData sagaData = (CreateOrderSagaData) sagaInstance.getSagaData();
+            sagaData.setSagaInstanceId(sagaInstanceId);
             
             // Use retry handler to execute step with Resilience4j retry
             retryHandler.executeWithRetry(step, sagaData, result -> {
                 if (result.isSuccess()) {
                     // Store step result in saga data
                     storeStepResult(sagaData, step.getName(), result.getResult());
-                    handleStepResult(sagaInstance.getId(), step.getName(), result.getResult());
+                    handleStepResult(sagaInstanceId, step.getName(), result.getResult());
                 } else {
-                    handleStepFailure(sagaInstance.getId(), step.getName(), result.getFailure());
+                    handleStepFailure(sagaInstanceId, step.getName(), result.getFailure());
                 }
             });
         } else {
@@ -123,8 +126,9 @@ public class SagaManager {
         sagaInstance = sagaInstanceRepository.save(sagaInstance);
         
         // Execute compensating transactions in reverse order
-        SagaDefinition sagaDef = findSagaDefinition(sagaInstance.getSagaType())
-                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaInstance.getSagaType()));
+        final String sagaType = sagaInstance.getSagaType();
+        final SagaDefinition sagaDef = findSagaDefinition(sagaType)
+                .orElseThrow(() -> new IllegalArgumentException("Unknown saga type: " + sagaType));
         
         List<String> completedStepNames = sagaInstance.getCompletedStepNames();
         for (int i = completedStepNames.size() - 1; i >= 0; i--) {

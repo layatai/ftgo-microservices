@@ -26,7 +26,7 @@ public class KitchenService {
         log.info("Creating ticket for order: {}", orderId);
         
         List<TicketLineItem> lineItems = lineItemDTOs.stream()
-                .map(dto -> new TicketLineItem(dto.getMenuItemId(), dto.getName(), dto.getQuantity()))
+                .map(dto -> new TicketLineItem(dto.menuItemId(), dto.name(), dto.quantity()))
                 .collect(Collectors.toList());
         
         Ticket ticket = new Ticket(orderId, restaurantId, lineItems, readyBy);

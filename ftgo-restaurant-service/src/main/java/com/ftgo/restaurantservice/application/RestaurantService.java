@@ -45,7 +45,7 @@ public class RestaurantService {
         Restaurant restaurant = getRestaurant(restaurantId);
         
         List<MenuItem> menuItems = menuItemDTOs.stream()
-                .map(dto -> new MenuItem(dto.getName(), Money.of(dto.getPrice(), dto.getCurrency())))
+                .map(dto -> new MenuItem(dto.name(), Money.of(dto.price(), dto.currency())))
                 .collect(Collectors.toList());
         
         restaurant.updateMenu(menuItems);

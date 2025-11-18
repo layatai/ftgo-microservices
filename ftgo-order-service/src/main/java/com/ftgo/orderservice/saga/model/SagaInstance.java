@@ -101,11 +101,10 @@ public class SagaInstance {
         return completedStepNames;
     }
 
-    private SagaStepExecution findStepExecution(String stepName) {
+    private java.util.Optional<SagaStepExecution> findStepExecution(String stepName) {
         return stepExecutions.stream()
                 .filter(exec -> exec.getStepName().equals(stepName))
-                .findFirst()
-                .orElse(null);
+                .findFirst();
     }
 
     private String serializeSagaData(Object sagaData) {

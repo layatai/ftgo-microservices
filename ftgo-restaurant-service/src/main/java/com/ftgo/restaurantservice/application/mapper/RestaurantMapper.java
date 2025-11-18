@@ -14,7 +14,6 @@ import java.util.List;
 public interface RestaurantMapper {
     RestaurantDTO toDTO(Restaurant restaurant);
     
-    @Mapping(target = "restaurant", ignore = true)
     MenuItemDTO toDTO(MenuItem menuItem);
     
     List<MenuItemDTO> toMenuItemDTOs(List<MenuItem> menuItems);

@@ -10,8 +10,8 @@ import com.ftgo.orderservice.domain.OrderRepository;
 import com.ftgo.orderservice.domain.OrderState;
 import com.ftgo.orderservice.infrastructure.OrderEventPublisher;
 import com.ftgo.orderservice.infrastructure.RestaurantServiceClient;
+import com.ftgo.orderservice.application.OrderSagaService;
 import com.ftgo.orderservice.saga.CreateOrderSagaData;
-import com.ftgo.orderservice.saga.OrderSagaService;
 import com.ftgo.orderservice.saga.model.SagaInstance;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -41,8 +41,8 @@ public class OrderService {
                 .map(dto -> {
                     // In a real implementation, we would fetch menu item details from restaurant service
                     // For now, we'll use the provided price
-                    Money price = Money.of(dto.getPrice(), dto.getCurrency());
-                    return new OrderLineItem(dto.getMenuItemId(), dto.getName(), dto.getQuantity(), price);
+                    Money price = Money.of(dto.price(), dto.currency());
+                    return new OrderLineItem(dto.menuItemId(), dto.name(), dto.quantity(), price);
                 })
                 .collect(Collectors.toList());
         

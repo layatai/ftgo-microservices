@@ -13,7 +13,6 @@ import java.util.List;
 public interface CustomerMapper {
     CustomerDTO toDTO(Customer customer);
     
-    @Mapping(target = "customer", ignore = true)
     PaymentMethodDTO toDTO(PaymentMethod paymentMethod);
     
     List<PaymentMethodDTO> toPaymentMethodDTOs(List<PaymentMethod> paymentMethods);

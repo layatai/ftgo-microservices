@@ -8,6 +8,9 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionStage;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
@@ -22,6 +25,7 @@ public class SagaStepRetryHandler {
     private static final String RETRY_INSTANCE_NAME = "saga-step-retry";
     
     private final RetryRegistry retryRegistry;
+    private final ScheduledExecutorService executorService = Executors.newScheduledThreadPool(10);
 
     /**
      * Executes a saga step with retry logic and exponential backoff using Resilience4j.
@@ -41,7 +45,7 @@ public class SagaStepRetryHandler {
         
         // Create a supplier that wraps the async step execution in CompletableFuture
         // This supplier will be called for each retry attempt
-        Supplier<CompletableFuture<SagaStepResult>> stepSupplier = () -> {
+        Supplier<CompletionStage<SagaStepResult>> stepSupplier = () -> {
             CompletableFuture<SagaStepResult> future = new CompletableFuture<>();
             
             log.debug("Attempting to execute step: {}", step.getName());
@@ -63,7 +67,13 @@ public class SagaStepRetryHandler {
         };
         
         // Decorate with retry logic - Resilience4j will call the supplier for each retry attempt
-        CompletableFuture<SagaStepResult> retryableFuture = retry.executeCompletionStage(stepSupplier);
+        CompletionStage<SagaStepResult> retryableStage = retry.executeCompletionStage(
+            executorService, 
+            stepSupplier
+        );
+        
+        // Convert CompletionStage to CompletableFuture for easier handling
+        CompletableFuture<SagaStepResult> retryableFuture = retryableStage.toCompletableFuture();
         
         // Handle final result (success or failure after retries)
         retryableFuture
